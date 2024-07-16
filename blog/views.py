@@ -1,6 +1,6 @@
 from django.db.models.query import QuerySet
 from django.shortcuts import render
-from django.views.generic import ListView, DetailView, UpdateView, CreateView
+from django.views.generic import ListView, DetailView, UpdateView, CreateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from .forms import CommentForm
 from .models import Post, Category, Comment
@@ -66,3 +66,9 @@ class CommentCreateView(CreateView):
     
     def get_success_url(self):
         return reverse("blog:blog_detail", args=[self.object.post_id])
+    
+class CommentDeleteView(DeleteView):
+
+    model = Comment
+    from_class = CommentForm
+    template_name = "blog/comment_form.html"
