@@ -1,0 +1,31 @@
+{% extends "blog/detail.html" %} 
+
+{% block page_content %}
+    <small>
+        {{ post.created_on.date }} | Categories:
+        {% for category in post.categories.all %}
+            <a href="{% url 'blog:blog_category' category.name %}">
+                {{ category.name }}
+            </a>
+        {% endfor %}
+    </small>
+    <p>{{ post.body | linebreaks }}</p>
+
+    <div>
+        <form method="post">
+            {% csrf_token %}
+            <!-- <div>
+                {{ form.author }}
+            </div>
+            <div>
+                {{ form.body }}
+            </div>
+            <div>
+                {{ form.post }}
+            </div> -->
+            <table>{{form.as_table}}</table>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+{% endblock page_content %}
