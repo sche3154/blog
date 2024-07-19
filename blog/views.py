@@ -24,7 +24,6 @@ class PostDetailView(DetailView):
 
         return context
 
-    
 class CategoryListView(ListView):
     model = Category
     template_name = 'blog/category.html'
@@ -42,17 +41,38 @@ class CategoryListView(ListView):
 
         return context
 
+class PostCreateView(CreateView):
+    model = Post
+    fields = ['title', 'body', 'categories']
+
+    def get_success_url(self):
+        return reverse("blog:blog_detail", args=[self.object.id])
+
+
+class PostUpdateView(UpdateView):
+    model = Post
+
+    fields = ['title', 'body', 'categories']
+        
+
+    def get_success_url(self):
+
+        return reverse('blog:blog_detail', args = [self.object.id])
+
+
+class PostDeleteView(DeleteView):
+    model = Post
+
+    def get_success_url(self):
+
+        return reverse('blog:blog_index')
+
+
 class CommentCreateView(CreateView):
 
     model = Comment
     form_class = CommentForm
     template_name = "blog/comment_form.html"
-
-    def get_initial(self):
-        initial_data = super().get_initial()
-        post = Post.objects.get(id=self.kwargs["post_id"])
-        initial_data["post"] = post
-        return initial_data
     
     def form_valid(self, form):
         form.instance.post = Post.objects.get(id=self.kwargs["post_id"]) 
@@ -65,10 +85,51 @@ class CommentCreateView(CreateView):
         return context
     
     def get_success_url(self):
+        return reverse("blog:blog_detail", args=[self.object.post.id])
+
+class CommentUpdateView(UpdateView):
+
+    model = Comment
+    fields = ["body"]
+
+    def get_object(self, queryset=None):
+        comment = Comment.objects.get(id=self.kwargs['comment_id'])
+
+        return comment
+
+    def form_valid(self, form):
+        comment = self.object
+        form.instance.post = Post.objects.get(id=self.kwargs["post_id"]) 
+        form.instance.author = comment.author
+        
+        return super().form_valid(form)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = Post.objects.get(id=self.kwargs["post_id"])
+        context['post'] = post
+        return context
+
+    def get_success_url(self, **kwargs):
         return reverse("blog:blog_detail", args=[self.object.post_id])
     
 class CommentDeleteView(DeleteView):
 
     model = Comment
-    from_class = CommentForm
-    template_name = "blog/comment_form.html"
+
+
+    def get_object(self, queryset=None):
+        comment = Comment.objects.get(id=self.kwargs['comment_id'])
+
+        return comment
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = Post.objects.get(id=self.kwargs["post_id"])
+        context['post'] = post
+        return context
+
+    def get_success_url(self):
+        return reverse_lazy('blog:blog_detail', args=[self.object.post_id])
+
+

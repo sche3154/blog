@@ -14,17 +14,10 @@
     <div>
         <form method="post">
             {% csrf_token %}
-            <!-- <div>
-                {{ form.author }}
-            </div>
-            <div>
-                {{ form.body }}
-            </div>
-            <div>
-                {{ form.post }}
-            </div> -->
             <table>{{form.as_table}}</table>
             <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-primary"
+            onclick="location.href='{% url "blog:blog_detail" post.pk %}'">Cancel</button>
         </form>
     </div>
 

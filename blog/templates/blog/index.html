@@ -3,12 +3,14 @@
 
 {% block page_title %}
     <h2>Blog Posts</h2>
+    <button type="button" class="btn btn-primary" 
+    onclick="location.href='{% url "blog:post_create" %}'">Create Post</button>
 {% endblock page_title %}
 
 {% block page_content %}
     {% block posts %}
         {% for post in posts %}
-            <h3><a href="{% url 'blog:blog_detail' post.pk %}">{{ post.title }}</a></h3>
+            <h3><a href="{% url 'blog:blog_detail' post.pk %}">{{ post.title }}</a> </h3>
             <small>
                 {{ post.created_on.date }} | Categories:
                 {% for category in post.categories.all %}

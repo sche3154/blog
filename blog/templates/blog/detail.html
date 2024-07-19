@@ -3,7 +3,17 @@
 
 
 {% block page_title %}
-    <h2>{{ post.title }}</h2>
+
+    <h2>{{ post.title }} </h2>  
+    <div>
+        <button type="button" class="btn btn-primary" 
+        onclick="location.href='{% url "blog:post_update" post.pk %}'">Edit Post
+        </button>
+        <button type="button" class="btn btn-primary" 
+        onclick="location.href='{% url "blog:post_delete" post.pk %}'">Delete</button>
+    </div>
+
+    
 {% endblock page_title %}
 
 {% block page_content %}
@@ -20,6 +30,7 @@
     <div>
         <button type="submit" class="btn btn-primary" 
         onclick="location.href='{% url "blog:comment_create" post.pk %}'" >Left Comment</button>
+ 
     </div>
 
     <h3>Comments</h3>
@@ -30,8 +41,10 @@
         <p>
             {{comment.body | linebreaks}}
             <div>
-                <button type="submit" class="btn btn-primary" 
-                onclick="location.href='{% url "blog:comment_delete" post.pk %}'" >Delete</button>
+                <button type="button" class="btn btn-primary" 
+                onclick="location.href='{% url "blog:comment_update" post.pk comment.pk %}'" >Edit Comment</button>
+                <button type="button" class="btn btn-primary" 
+                onclick="location.href='{% url "blog:comment_delete" post.pk comment.pk %}'" >Delete Comment</button>
             </div>
         </p>
         

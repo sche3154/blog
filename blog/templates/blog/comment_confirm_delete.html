@@ -1,0 +1,16 @@
+{% extends "base.html" %} 
+
+
+{% block page_content %}
+    <div>
+        <form method="post">
+            {% csrf_token %}
+            <p>{{comment.author}}</p>
+            <p>{{comment.body}}</p>
+            <button type="submit" class="btn btn-primary">Confirm Delete</button>
+            <button type="button" class="btn btn-primary" 
+            onclick="location.href='{% url "blog:blog_detail" post.pk %}'">Cancle</button>
+        </form>
+    </div>
+
+{% endblock page_content %}
