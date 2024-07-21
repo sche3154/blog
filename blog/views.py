@@ -2,8 +2,10 @@ from django.db.models.query import QuerySet
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView, UpdateView, CreateView, DeleteView
 from django.urls import reverse, reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .forms import CommentForm
 from .models import Post, Category, Comment
+
 
 # Create your views here.
 class PostListView(ListView):
@@ -41,15 +43,17 @@ class CategoryListView(ListView):
 
         return context
 
-class PostCreateView(CreateView):
+
+class PostCreateView(LoginRequiredMixin,CreateView):
     model = Post
     fields = ['title', 'body', 'categories']
+    
 
     def get_success_url(self):
         return reverse("blog:blog_detail", args=[self.object.id])
 
 
-class PostUpdateView(UpdateView):
+class PostUpdateView(LoginRequiredMixin,UpdateView):
     model = Post
 
     fields = ['title', 'body', 'categories']
@@ -60,7 +64,7 @@ class PostUpdateView(UpdateView):
         return reverse('blog:blog_detail', args = [self.object.id])
 
 
-class PostDeleteView(DeleteView):
+class PostDeleteView(LoginRequiredMixin,DeleteView):
     model = Post
 
     def get_success_url(self):
@@ -68,7 +72,7 @@ class PostDeleteView(DeleteView):
         return reverse('blog:blog_index')
 
 
-class CommentCreateView(CreateView):
+class CommentCreateView(LoginRequiredMixin,CreateView):
 
     model = Comment
     form_class = CommentForm
@@ -87,7 +91,8 @@ class CommentCreateView(CreateView):
     def get_success_url(self):
         return reverse("blog:blog_detail", args=[self.object.post.id])
 
-class CommentUpdateView(UpdateView):
+
+class CommentUpdateView(LoginRequiredMixin,UpdateView):
 
     model = Comment
     fields = ["body"]
@@ -113,7 +118,8 @@ class CommentUpdateView(UpdateView):
     def get_success_url(self, **kwargs):
         return reverse("blog:blog_detail", args=[self.object.post_id])
     
-class CommentDeleteView(DeleteView):
+
+class CommentDeleteView(LoginRequiredMixin,DeleteView):
 
     model = Comment
 
