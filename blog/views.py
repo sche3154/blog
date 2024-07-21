@@ -2,7 +2,7 @@ from django.db.models.query import QuerySet
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView, UpdateView, CreateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .forms import CommentForm
 from .models import Post, Category, Comment
 
@@ -58,7 +58,6 @@ class PostUpdateView(LoginRequiredMixin,UpdateView):
 
     fields = ['title', 'body', 'categories']
         
-
     def get_success_url(self):
 
         return reverse('blog:blog_detail', args = [self.object.id])
@@ -77,6 +76,11 @@ class CommentCreateView(LoginRequiredMixin,CreateView):
     model = Comment
     form_class = CommentForm
     template_name = "blog/comment_form.html"
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['author']  = self.request.user
+        return initial
     
     def form_valid(self, form):
         form.instance.post = Post.objects.get(id=self.kwargs["post_id"]) 
@@ -91,8 +95,8 @@ class CommentCreateView(LoginRequiredMixin,CreateView):
     def get_success_url(self):
         return reverse("blog:blog_detail", args=[self.object.post.id])
 
-
-class CommentUpdateView(LoginRequiredMixin,UpdateView):
+    
+class CommentUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
 
     model = Comment
     fields = ["body"]
@@ -117,16 +121,21 @@ class CommentUpdateView(LoginRequiredMixin,UpdateView):
 
     def get_success_url(self, **kwargs):
         return reverse("blog:blog_detail", args=[self.object.post_id])
+
+    def test_func(self):
+        comment = self.get_object()
+        print(self.request.user, comment.author)
+        print(self.request.user == comment.author)
+
+        return self.request.user == comment.author
     
 
-class CommentDeleteView(LoginRequiredMixin,DeleteView):
+class CommentDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
 
     model = Comment
 
-
     def get_object(self, queryset=None):
         comment = Comment.objects.get(id=self.kwargs['comment_id'])
-
         return comment
 
     def get_context_data(self, **kwargs):
@@ -138,4 +147,6 @@ class CommentDeleteView(LoginRequiredMixin,DeleteView):
     def get_success_url(self):
         return reverse_lazy('blog:blog_detail', args=[self.object.post_id])
 
-
+    def test_func(self):
+        comment = self.get_object()
+        return self.request.user == comment.author
