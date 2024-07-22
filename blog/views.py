@@ -1,9 +1,8 @@
-from django.db.models.query import QuerySet
-from django.shortcuts import render
 from django.views.generic import ListView, DetailView, UpdateView, CreateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from .forms import CommentForm
+from django.core.exceptions import PermissionDenied
+from .forms import CommentForm, PostForm
 from .models import Post, Category, Comment
 
 
@@ -46,29 +45,44 @@ class CategoryListView(ListView):
 
 class PostCreateView(LoginRequiredMixin,CreateView):
     model = Post
-    fields = ['title', 'body', 'categories']
-    
+    form_class = PostForm
+
+    def form_valid(self, form):
+        form.instance.author  = self.request.user
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse("blog:blog_detail", args=[self.object.id])
 
 
-class PostUpdateView(LoginRequiredMixin,UpdateView):
+class PostUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
     model = Post
 
     fields = ['title', 'body', 'categories']
         
     def get_success_url(self):
-
         return reverse('blog:blog_detail', args = [self.object.id])
+    
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author
+    
+    # def handle_no_permission(self):
+    #     raise PermissionDenied("You cannot modify other people's posts.")
 
 
-class PostDeleteView(LoginRequiredMixin,DeleteView):
+class PostDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
     model = Post
 
     def get_success_url(self):
 
-        return reverse('blog:blog_index')
+        return reverse_lazy('blog:blog_index')
+    
+    def test_func(self):
+        post = self.get_object()
+
+        return self.request.user == post.author
+
 
 
 class CommentCreateView(LoginRequiredMixin,CreateView):
@@ -77,12 +91,13 @@ class CommentCreateView(LoginRequiredMixin,CreateView):
     form_class = CommentForm
     template_name = "blog/comment_form.html"
 
-    def get_initial(self):
-        initial = super().get_initial()
-        initial['author']  = self.request.user
-        return initial
+    # def get_initial(self):
+    #     initial = super().get_initial()
+    #     initial['author']  = self.request.user
+    #     return initial
     
     def form_valid(self, form):
+        form.instance.author = self.request.user
         form.instance.post = Post.objects.get(id=self.kwargs["post_id"]) 
         return super().form_valid(form)
 
@@ -103,7 +118,6 @@ class CommentUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
 
     def get_object(self, queryset=None):
         comment = Comment.objects.get(id=self.kwargs['comment_id'])
-
         return comment
 
     def form_valid(self, form):
@@ -124,8 +138,6 @@ class CommentUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
 
     def test_func(self):
         comment = self.get_object()
-        print(self.request.user, comment.author)
-        print(self.request.user == comment.author)
 
         return self.request.user == comment.author
     
