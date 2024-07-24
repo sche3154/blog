@@ -1,3 +1,4 @@
+from django.shortcuts import render
 from django.views.generic import ListView, DetailView, UpdateView, CreateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -12,6 +13,12 @@ class PostListView(ListView):
     template_name = "blog/index.html"
 
     context_object_name = 'posts'
+
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        if query:
+            return Post.objects.filter(title__icontains=query)
+        return Post.objects.all()
 
 class PostDetailView(DetailView):
     model = Post
@@ -138,8 +145,10 @@ class CommentUpdateView(LoginRequiredMixin,UserPassesTestMixin,UpdateView):
 
     def test_func(self):
         comment = self.get_object()
-
-        return self.request.user == comment.author
+        if self.request.user == comment.author:
+            return True
+        else:
+            raise PermissionDenied("You cannot modify other users' posts.")
     
 
 class CommentDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
@@ -161,4 +170,12 @@ class CommentDeleteView(LoginRequiredMixin,UserPassesTestMixin,DeleteView):
 
     def test_func(self):
         comment = self.get_object()
-        return self.request.user == comment.author
+        if self.request.user == comment.author:
+            return True
+        else:
+            raise PermissionDenied("You cannot modify other users' posts.")
+
+
+# Custom 403 handler
+# def custom_403_view(request, exception=None):
+#     return render(request, 'blog/403.html', status=403)

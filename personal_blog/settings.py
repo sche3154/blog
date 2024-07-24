@@ -130,6 +130,11 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# LOGIN_REDIRECT_URL = 'blog:blog_index'  # Redirect to the blog home page after login
-# LOGOUT_REDIRECT_URL = 'login'  # Redirect to the login page after logout
 LOGIN_URL = '/accounts/login'
+
+# The default session engine
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+# Session will expire at browser close
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# Set session cookie age to 0 seconds, so it expires immediately
+# SESSION_COOKIE_AGE = 60 * 60 * 24
